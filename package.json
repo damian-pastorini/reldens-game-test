@@ -27,7 +27,7 @@
         }
     },
     "dependencies": {
-        "@reldens/utils": "^0.17.8",
+        "@reldens/utils": "^0.20.0",
         "reldens": "^4.0.0-beta.25"
     }
 }

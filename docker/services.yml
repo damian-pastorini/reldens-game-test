@@ -1,0 +1,46 @@
+version: '3.9'
+
+services:
+  mysql_db:
+    image: mysql:5.7
+    container_name: db
+    ports:
+      - ${MYSQL_PORT}:${MYSQL_PORT}
+    expose:
+      - ${MYSQL_PORT}
+    env_file: ./db/.env
+    restart: always
+    volumes:       
+      - db:/var/lib/mysql
+      - ./migrations/init:/docker-entrypoint-initdb.d
+    networks:
+      - reldens
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -P ${MYSQL_PORT} -p${MYSQL_PASS} | grep 'mysqld is alive' || exit 1"]
+      interval: 10s
+      timeout: 30s
+      retries: 10
+        
+  app:
+    build:
+      context: ../
+      dockerfile: ./docker/app/Dockerfile
+    container_name: app
+    env_file: ./app/.env
+    restart: unless-stopped
+    networks:
+      - reldens
+    depends_on:
+      mysql_db:
+        condition: service_healthy
+    ports:
+      - ${RELDENS_PORT}:${RELDENS_PORT}
+    expose:
+      - ${RELDENS_PORT}
+
+networks:
+  reldens:
+
+volumes:
+  db:
+    driver: local
